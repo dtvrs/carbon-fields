@@ -41,9 +41,9 @@ class Icon_Field extends Predefined_Options_Field {
 			''=>array(
 				'name' => $this->none_label,
 				'id' => '',
-				'categories' => array(),
 				'class'=>'fa',
 				'contents'=>'&nbsp;',
+				'categories' => array(),
 			),
 		);
 		return $options;
@@ -56,9 +56,9 @@ class Icon_Field extends Predefined_Options_Field {
 				static::$fontawesome_options_cache[ $icon['id'] ] = array(
 					'name'=>$icon['name'],
 					'id'=>$icon['id'],
-					'categories'=>$icon['categories'],
 					'class'=>'fa fa-' . $icon['id'],
 					'contents'=>'',
+					'categories'=>$icon['categories'],
 				);
 			}
 		}
@@ -76,9 +76,9 @@ class Icon_Field extends Predefined_Options_Field {
 				static::$dashicons_options_cache[ $icon ] = array(
 					'name'=>$icon,
 					'id'=>$icon,
-					'categories'=>array(),
 					'class'=>'dashicons-before ' . $icon,
 					'contents'=>'',
+					'categories'=>array(),
 				);
 			}
 		}
@@ -126,6 +126,25 @@ class Icon_Field extends Predefined_Options_Field {
 		}
 		$options = $this->get_default_options() + $options;
 		$options = apply_filters( 'carbon_icon_options', $options, $this->get_name() );
+
+		foreach ( $options as $key => $value ) {
+			if ( !isset( $value['name'] ) ) {
+				$value['name'] = $key;
+			}
+			if ( !isset( $value['id'] ) ) {
+				$value['id'] = $key;
+			}
+			if ( !isset( $value['class'] ) ) {
+				$value['class'] = '';
+			}
+			if ( !isset( $value['contents'] ) ) {
+				$value['contents'] = '';
+			}
+			if ( !isset( $value['categories'] ) ) {
+				$value['categories'] = array();
+			}
+			$options[$key] = $value;
+		}
 
 		$field_data = array_merge( $field_data, array(
 			'options' => $options,
