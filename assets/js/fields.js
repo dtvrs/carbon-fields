@@ -1608,6 +1608,111 @@ window.carbon = window.carbon || {};
 	carbon.fields.View.DateTime = carbon.fields.View.Time;
 
 	/*--------------------------------------------------------------------------
+	 * Icon
+	 *------------------------------------------------------------------------*/
+
+	// Icon MODEL
+	carbon.fields.Model.Icon = carbon.fields.Model.extend({
+		defaults: _.extend({}, carbon.fields.Model.prototype.defaults, {
+			'value': ''
+		})
+	});
+
+	// Icon VIEW
+	carbon.fields.View.Icon = carbon.fields.View.extend({
+		// Add the events from the parent view and also include new ones
+		events: function() {
+			return _.extend({}, carbon.fields.View.prototype.events, {
+				'change :input': '',
+				'change :input[type="hidden"]:first': 'sync',
+				'click .carbon-icon-preview': 'togglePopup',
+				'click .carbon-icon-icon-trigger': 'changeValue',
+				'keyup .carbon-icon-search input:first': 'search'
+			});
+		},
+
+		initialize: function() {
+			// Initialize the parent view
+			carbon.fields.View.prototype.initialize.apply(this); // do not delete
+
+			this.on('field:rendered', (function() {
+				this.$searchField = this.$('.carbon-icon-search input:first');
+				this.$preview = this.$('.carbon-icon-preview:first');
+				this.$previewIcon = this.$preview.find('i:first');
+				this.$popup = this.$('.carbon-icon-popup:first');
+			}).bind(this));
+			this.listenTo(this.model, 'change:value', this.syncView);
+		},
+
+		closePopup: function() {
+			this.$popup.stop().slideUp(300);
+		},
+
+		togglePopup: function(event) {
+			this.$popup.stop().slideToggle(300);
+			event.preventDefault();
+		},
+
+		changeValue: function(event) {
+			var $a = this.$(event.currentTarget);
+			var value = $a.attr('data-value');
+			this.$('.carbon-icon-value').val(value).trigger('change');
+			this.closePopup();
+			event.preventDefault();
+		},
+
+		syncView: function(model) {
+			this.$('.carbon-icon-icon-trigger').removeClass('active');
+			this.$('.carbon-icon-icon-trigger[data-value="' + model.get('value') + '"]').addClass('active');
+
+			var options = model.get('options');
+			var value = model.get('value');
+			var previousValue = model.previous('value');
+
+			if ( previousValue && typeof options[previousValue] != 'undefined' ) {
+				this.$previewIcon.removeClass(options[previousValue].class);
+			}
+			if ( value && typeof options[value] != 'undefined' ) {
+				this.$previewIcon.addClass(options[value].class);
+				this.$previewIcon.html(options[value].contents);
+				this.$previewIcon.removeClass('hidden');
+			} else {
+				this.$previewIcon.addClass('hidden');
+			}
+		},
+
+		search: function(event) {
+			var query = $.trim( this.$(event.target).val().toLowerCase() );
+			var options = this.model.get('options');
+
+			if ( !query ) {
+				this.$('.carbon-icon-icon-container').removeClass('hidden');
+				return;
+			}
+
+			for (var id in options) {
+				var option = options[id];
+				var compareTo = [option.id, option.name].concat(option.categories);
+				var match = false;
+				for (var i = 0; i < compareTo.length; i++) {
+					var str = compareTo[i].toLowerCase();
+					if ( str.indexOf(query) !== -1 ) {
+						match = true;
+						break;
+					}
+				}
+
+				var $container = this.$('.carbon-icon-icon-container-' + option.id);
+				if ( match ) {
+					$container.removeClass('hidden');
+				} else {
+					$container.addClass('hidden');
+				}
+			}
+		}
+	});
+
+	/*--------------------------------------------------------------------------
 	 * COMPLEX
 	 *------------------------------------------------------------------------*/
 
